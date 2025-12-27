@@ -2,10 +2,47 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Check, Calendar, Clock, Video, HelpCircle, ArrowRight, ChevronDown, ChevronUp, Search, Map, CheckCircle } from "lucide-react";
+import { Check, Calendar, Clock, Video, HelpCircle, ArrowRight, ChevronDown, ChevronUp, Search, Map, CheckCircle, Loader2 } from "lucide-react";
 
 export default function ContactPage() {
   const [isFaqExpanded, setIsFaqExpanded] = useState(false);
+
+  // --- API STATE ---
+  const [formData, setFormData] = useState({
+    firstName: "",
+    email: "",
+    website: "",
+    stage: "",
+    pain: "",
+    budget: ""
+  });
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      setStatus("error");
+    }
+  };
+  // ----------------
 
   // FAQ Data - Expanded list
   const faqs = [
@@ -142,63 +179,124 @@ export default function ContactPage() {
                 <p className="text-zinc-400 font-medium">Please fill this out before selecting a time. It helps us prepare.</p>
               </div>
 
-              <form className="space-y-6">
-                
-                {/* Name & Email */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-zinc-300">First Name</label>
-                    <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" placeholder="Jane" />
+              {/* SUCCESS STATE */}
+              {status === "success" ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in py-10">
+                  <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/50">
+                    <Check className="w-10 h-10 text-green-500" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-zinc-300">Email</label>
-                    <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" placeholder="jane@company.com" />
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Application Received</h3>
+                    <p className="text-zinc-400 mt-2 text-sm leading-relaxed">
+                      Thank you, {formData.firstName}. <br/>
+                      Please proceed to the calendar on the right to select your time slot.
+                    </p>
                   </div>
                 </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  
+                  {/* Name & Email */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-zinc-300">First Name</label>
+                      <input 
+                        name="firstName" 
+                        required 
+                        onChange={handleChange} 
+                        type="text" 
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" 
+                        placeholder="Jane" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-zinc-300">Email</label>
+                      <input 
+                        name="email" 
+                        required 
+                        onChange={handleChange} 
+                        type="email" 
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" 
+                        placeholder="jane@company.com" 
+                      />
+                    </div>
+                  </div>
 
-                {/* Website */}
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-zinc-300">Website / Social URL</label>
-                  <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" placeholder="www.yourwebsite.com" />
-                </div>
+                  {/* Website */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-300">Website / Social URL</label>
+                    <input 
+                      name="website" 
+                      onChange={handleChange} 
+                      type="text" 
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" 
+                      placeholder="www.yourwebsite.com" 
+                    />
+                  </div>
 
-                {/* Stage Selection */}
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-zinc-300">Which best describes you?</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none">
-                    <option className="text-black">Select your stage...</option>
-                    <option className="text-black">I'm ready to Launch (Zero to One)</option>
-                    <option className="text-black">I'm scaling a $100k+ Business (Hustle to Autopilot)</option>
-                  </select>
-                </div>
+                  {/* Stage Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-300">Which best describes you?</label>
+                    <select 
+                      name="stage" 
+                      onChange={handleChange} 
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none"
+                    >
+                      <option className="text-black" value="">Select your stage...</option>
+                      <option className="text-black" value="Launch">I'm ready to Launch (Zero to One)</option>
+                      <option className="text-black" value="Scale">I'm scaling a $100k+ Business (Hustle to Autopilot)</option>
+                    </select>
+                  </div>
 
-                {/* Tech Pain */}
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-zinc-300">What is your biggest "Tech Pain" right now?</label>
-                  <textarea rows={3} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" placeholder="e.g. My email list doesn't talk to my course platform..."></textarea>
-                </div>
+                  {/* Tech Pain */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-300">What is your biggest "Tech Pain" right now?</label>
+                    <textarea 
+                      name="pain" 
+                      onChange={handleChange} 
+                      rows={3} 
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors" 
+                      placeholder="e.g. My email list doesn't talk to my course platform..."
+                    ></textarea>
+                  </div>
 
-                {/* Budget */}
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-zinc-300">Budget Range</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none">
-                    <option className="text-black">Select a range...</option>
-                    <option className="text-black">$1.5k - $3k (MVP / Quick Fix)</option>
-                    <option className="text-black">$4.5k - $7k (Launchpad System)</option>
-                    <option className="text-black">$7k - $10k+ (Growth Engine / Custom)</option>
-                  </select>
-                </div>
+                  {/* Budget */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-zinc-300">Budget Range</label>
+                    <select 
+                      name="budget" 
+                      onChange={handleChange} 
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none"
+                    >
+                      <option className="text-black" value="">Select a range...</option>
+                      <option className="text-black" value="1.5-3k">$1.5k - $3k (MVP / Quick Fix)</option>
+                      <option className="text-black" value="4.5-7k">$4.5k - $7k (Launchpad System)</option>
+                      <option className="text-black" value="7-10k+">$7k - $10k+ (Growth Engine / Custom)</option>
+                    </select>
+                  </div>
 
-                <div className="pt-4">
-                  <button type="submit" className="w-full btn-primary py-4 rounded-xl font-bold text-lg hover:shadow-primary/20 hover:shadow-lg transition-all">
-                    Submit Application
-                  </button>
-                  <p className="text-center text-xs text-zinc-500 mt-4">
-                    After submitting, you can confirm your time on the calendar.
-                  </p>
-                </div>
+                  <div className="pt-4">
+                    {status === "error" && (
+                        <p className="text-red-400 text-sm mb-3">Something went wrong. Please try again.</p>
+                    )}
+                    <button 
+                      type="submit" 
+                      disabled={status === "loading"} 
+                      className="w-full btn-primary py-4 rounded-xl font-bold text-lg hover:shadow-primary/20 hover:shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-70"
+                    >
+                      {status === "loading" ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        "Submit Application"
+                      )}
+                    </button>
+                    <p className="text-center text-xs text-zinc-500 mt-4">
+                      After submitting, you can confirm your time on the calendar.
+                    </p>
+                  </div>
 
-              </form>
+                </form>
+              )}
             </div>
 
             {/* RIGHT: The Calendar Embed */}

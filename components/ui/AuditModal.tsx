@@ -10,18 +10,34 @@ interface AuditModalProps {
 
 export function AuditModal({ isOpen, onClose }: AuditModalProps) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  // Added "error" to status type
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    
     setStatus("loading");
-    // Simulate API call
-    setTimeout(() => {
-      setStatus("success");
-    }, 1500);
+
+    try {
+      // API CALL STARTS HERE
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        setStatus("success");
+        setEmail(""); // Clear form
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      setStatus("error");
+    }
   };
 
   return (
@@ -62,7 +78,6 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
                  <Lock className="w-3 h-3" /> Free Resource
               </div>
               
-              {/* UPDATED LEAD MAGNET NAME */}
               <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight pt-2">
                 The 6-Figure Business <br/>
                 <span className="text-primary">Automation Blueprint</span>
@@ -86,6 +101,11 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
                 />
               </div>
               
+              {/* Error Message */}
+              {status === "error" && (
+                <p className="text-red-500 text-xs font-bold text-center">Connection failed. Please try again.</p>
+              )}
+
               <button 
                 type="submit" 
                 disabled={status === "loading"}

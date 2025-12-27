@@ -31,7 +31,7 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
 
       if (res.ok) {
         setStatus("success");
-        setEmail(""); // Clear form
+        // We keep the email in state so we can display it in the success message
       } else {
         setStatus("error");
       }

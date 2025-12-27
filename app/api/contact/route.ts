@@ -11,24 +11,24 @@ export async function POST(request: Request) {
     const TAG_ID = process.env.FLUENT_TAG_CONTACT ? Number(process.env.FLUENT_TAG_CONTACT) : null;
 
     if (!WP_URL || !WP_PASS) {
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      return NextResponse.json({ error: "Server configuration error: Missing WP_URL or Password" }, { status: 500 });
     }
 
-    // Prepare Data for FluentCRM
+    // Prepare Data
     const data = {
       email: email,
       first_name: firstName,
       status: "subscribed",
-      tags: TAG_ID ? [TAG_ID] : [],
-      
-      // MAPPING: Form Input -> FluentCRM Slug
+      tags: TAG_ID ? [TAG_ID] : [], 
       custom_values: {
-        company_website: website,   // Maps to your existing 'company_website'
-        business_stage: stage,      // Maps to the new 'business_stage'
-        comments: pain,             // Maps 'Tech Pain' to your existing 'comments' field
-        budget_range: budget        // Maps to the new 'budget_range'
+        company_website: website,   
+        business_stage: stage,      
+        comments: pain,             
+        budget_range: budget        
       }
     };
+
+    console.log("Sending Data to WP:", JSON.stringify(data)); // Log what we are sending
 
     const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
@@ -42,14 +42,18 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("FluentCRM Contact Error:", result);
-      return NextResponse.json({ error: "Failed to submit application" }, { status: 500 });
+      // DEBUG MODE: Return the ACTUAL WordPress error to the frontend
+      console.error("WP Error:", result);
+      return NextResponse.json({ 
+        error: "WordPress Rejected Request", 
+        details: result // <--- This will show us the real error
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("API Error:", error);
-    return NextResponse.json({ error: "Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Server Error", details: error.message }, { status: 500 });
   }
 }

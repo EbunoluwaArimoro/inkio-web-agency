@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       }
     };
 
-    const response = await fetch(`${WP_URL}/wp-json/fluentcrm/v2/subscribers`, {
+    const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

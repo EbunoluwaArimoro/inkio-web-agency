@@ -18,6 +18,7 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("Application Received"); // Added this line
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,6 +39,8 @@ export default function ContactPage() {
       const result = await res.json();
 
       if (res.ok) {
+        // Set the dynamic message from the API (e.g., "Welcome back!" or "Application Received")
+        setSuccessMessage(result.message || "Application Received");
         setStatus("success");
       } else {
         setStatus("error");
@@ -187,7 +190,8 @@ export default function ContactPage() {
                     <Check className="w-10 h-10 text-green-500" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white">Application Received</h3>
+                    {/* UPDATED MESSAGE HERE */}
+                    <h3 className="text-2xl font-bold text-white">{successMessage}</h3>
                     <p className="text-zinc-400 mt-2 text-sm leading-relaxed">
                       Thank you, {formData.firstName}. <br/>
                       Please proceed to the calendar on the right to select your time slot.

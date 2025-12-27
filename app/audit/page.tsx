@@ -6,11 +6,14 @@ import { Check, Lock, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 export default function AuditPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("Check Your Inbox!");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setStatus("loading");
+    setErrorMessage("");
 
     try {
       const res = await fetch("/api/audit", {
@@ -19,13 +22,19 @@ export default function AuditPage() {
         body: JSON.stringify({ email }),
       });
 
+      const result = await res.json();
+
       if (res.ok) {
+        // This captures "Welcome back!" or "Success!" from your API
+        setSuccessMessage(result.message || "Check Your Inbox!");
         setStatus("success");
       } else {
         setStatus("error");
+        setErrorMessage(result.error || "Something went wrong. Please try again.");
       }
     } catch (error) {
       setStatus("error");
+      setErrorMessage("Connection failed. Please check your internet.");
     }
   };
 
@@ -38,9 +47,9 @@ export default function AuditPage() {
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
               <Check className="w-10 h-10 text-green-600" />
             </div>
-            <h3 className="text-3xl font-bold text-black">Check Your Inbox!</h3>
+            <h3 className="text-3xl font-bold text-black">{successMessage}</h3>
             <p className="text-grey-medium text-lg leading-relaxed">
-              We've sent the blueprint to <br/><strong>{email}</strong>.
+              We've processed the request for <br/><strong>{email}</strong>.
             </p>
           </div>
         ) : (
@@ -74,7 +83,7 @@ export default function AuditPage() {
               </div>
               
               {status === "error" && (
-                <p className="text-red-500 text-sm font-bold text-center">Something went wrong. Please try again.</p>
+                <p className="text-red-500 text-sm font-bold text-center">{errorMessage}</p>
               )}
 
               <button 

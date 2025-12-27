@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const TAG_ID = process.env.FLUENT_TAG_CONTACT ? Number(process.env.FLUENT_TAG_CONTACT) : null;
 
     if (!WP_URL || !WP_PASS) {
-      return NextResponse.json({ error: "Server configuration error: Missing WP_URL or Password" }, { status: 500 });
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
     const data = {
@@ -27,7 +27,8 @@ export async function POST(request: Request) {
       }
     };
 
-    const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
+    // We use the /subscribe endpoint because it handles "Create OR Update" automatically
+    const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers/subscribe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,16 +40,17 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
-      // Check specifically for existing subscriber error
-      if (result.details?.email?.unique) {
-        return NextResponse.json({ error: "This email is already registered with us." }, { status: 400 });
-      }
-      return NextResponse.json({ error: "Failed to submit application. Please try again." }, { status: response.status });
+      return NextResponse.json({ error: result.message || "WordPress sync failed." }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true });
+    // Check if the user was already there or new
+    const message = result.message?.includes("updated") 
+      ? "Welcome back! Your details have been updated." 
+      : "Application Received!";
+
+    return NextResponse.json({ success: true, message });
 
   } catch (error: any) {
-    return NextResponse.json({ error: "Server Error", details: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }

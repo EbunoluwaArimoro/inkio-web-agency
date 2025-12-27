@@ -10,8 +10,9 @@ interface AuditModalProps {
 
 export function AuditModal({ isOpen, onClose }: AuditModalProps) {
   const [email, setEmail] = useState("");
-  // Added "error" to status type
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  // NEW: State to hold the specific error message
+  const [errorMessage, setErrorMessage] = useState("");
 
   if (!isOpen) return null;
 
@@ -20,35 +21,39 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
     if (!email) return;
     
     setStatus("loading");
+    setErrorMessage(""); // Clear previous errors
 
     try {
-      // API CALL STARTS HERE
       const res = await fetch("/api/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
+      // Parse the response to get the real error message
+      const data = await res.json();
+
       if (res.ok) {
         setStatus("success");
-        // We keep the email in state so we can display it in the success message
+        // We do NOT clear email so it can be shown in the success screen
       } else {
+        // Capture the server's error message
+        setErrorMessage(data.error || "Connection failed");
         setStatus("error");
       }
     } catch (error) {
+      setErrorMessage("Network connection failed");
       setStatus("error");
     }
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
       ></div>
 
-      {/* Modal Content */}
       <div className="relative bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-200">
         
         <button 
@@ -77,12 +82,10 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
               <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-red-100">
                  <Lock className="w-3 h-3" /> Free Resource
               </div>
-              
               <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight pt-2">
                 The 6-Figure Business <br/>
                 <span className="text-primary">Automation Blueprint</span>
               </h3>
-              
               <p className="text-grey-medium text-sm font-medium">
                 Find hidden revenue leaks and automate your growth in minutes.
               </p>
@@ -101,9 +104,11 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
                 />
               </div>
               
-              {/* Error Message */}
+              {/* NEW: Display the ACTUAL error message here */}
               {status === "error" && (
-                <p className="text-red-500 text-xs font-bold text-center">Connection failed. Please try again.</p>
+                <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-bold p-3 rounded-lg text-center">
+                  {errorMessage}
+                </div>
               )}
 
               <button 
@@ -118,7 +123,6 @@ export function AuditModal({ isOpen, onClose }: AuditModalProps) {
                 )}
               </button>
             </form>
-            
             <p className="text-center text-[10px] text-grey-medium opacity-60">
               100% Secure. Unsubscribe at any time.
             </p>

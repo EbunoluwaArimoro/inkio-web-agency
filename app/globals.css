@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* 1. Define Colors */
+  --color-primary: #3018CD;        /* The Electric Blue */
+  --color-black: #0A1019;          /* Rich Black */
+  --color-grey-light: #EEEEEE;     /* Backgrounds */
+  --color-grey-medium: #6F6F6F;    /* Body text */
+  --color-white: #FFFFFF;
+
+  /* 2. Define Fonts (Linked to Next.js Font Loaders) */
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-telegraf);
+
+  /* 3. Define Container */
+  --container-center: true;
+  --container-padding: 2rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* 4. Utility Layers (Buttons) */
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95 cursor-pointer;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .btn-outline {
+    @apply border border-grey-medium text-black px-6 py-3 rounded-lg font-medium transition-all hover:bg-grey-light active:scale-95 cursor-pointer;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 5. Base Styles */
+@layer base {
+  body {
+    @apply font-sans text-black bg-white;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold leading-[1.1];
+  }
+}
+
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes flow {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes shimmer {
+  from { background-position: 0 0; }
+  to { background-position: -200% 0; }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-flow {
+  stroke-dasharray: 10;
+  animation: flow 20s linear infinite;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }

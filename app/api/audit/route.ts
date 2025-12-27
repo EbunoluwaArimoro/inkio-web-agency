@@ -8,7 +8,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Load Environment Variables
     const WP_URL = process.env.WP_URL;
     const WP_USER = process.env.WP_USER;
     const WP_PASS = process.env.WP_APP_PASSWORD;
@@ -18,14 +17,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    // 1. Prepare Data for FluentCRM
     const data = {
       email: email,
       status: "subscribed",
-      tags: TAG_ID ? [TAG_ID] : [], // Adds the tag that triggers your automation
+      tags: TAG_ID ? [TAG_ID] : [], 
     };
 
-    // 2. Send to WordPress API
     const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {
@@ -38,14 +35,15 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("FluentCRM Error:", result);
-      return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
+      if (result.details?.email?.unique) {
+        return NextResponse.json({ error: "This email is already registered." }, { status: 400 });
+      }
+      return NextResponse.json({ error: "Failed to subscribe" }, { status: response.status });
     }
 
     return NextResponse.json({ success: true, result });
 
   } catch (error) {
-    console.error("API Route Error:", error);
     return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }

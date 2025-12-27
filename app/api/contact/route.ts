@@ -14,7 +14,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Server configuration error: Missing WP_URL or Password" }, { status: 500 });
     }
 
-    // Prepare Data
     const data = {
       email: email,
       first_name: firstName,
@@ -28,8 +27,6 @@ export async function POST(request: Request) {
       }
     };
 
-    console.log("Sending Data to WP:", JSON.stringify(data)); // Log what we are sending
-
     const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {
@@ -42,18 +39,16 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
-      // DEBUG MODE: Return the ACTUAL WordPress error to the frontend
-      console.error("WP Error:", result);
-      return NextResponse.json({ 
-        error: "WordPress Rejected Request", 
-        details: result // <--- This will show us the real error
-      }, { status: 500 });
+      // Check specifically for existing subscriber error
+      if (result.details?.email?.unique) {
+        return NextResponse.json({ error: "This email is already registered with us." }, { status: 400 });
+      }
+      return NextResponse.json({ error: "Failed to submit application. Please try again." }, { status: response.status });
     }
 
     return NextResponse.json({ success: true });
 
   } catch (error: any) {
-    console.error("API Error:", error);
     return NextResponse.json({ error: "Server Error", details: error.message }, { status: 500 });
   }
 }

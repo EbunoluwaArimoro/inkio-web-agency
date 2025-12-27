@@ -17,6 +17,7 @@ export default function ContactPage() {
     budget: ""
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,6 +26,7 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
+    setErrorMessage("");
 
     try {
       const res = await fetch("/api/contact", {
@@ -33,13 +35,18 @@ export default function ContactPage() {
         body: JSON.stringify(formData),
       });
 
+      const result = await res.json();
+
       if (res.ok) {
         setStatus("success");
       } else {
         setStatus("error");
+        // Capture the specific error from the API
+        setErrorMessage(result.error || "Something went wrong. Please try again.");
       }
     } catch (error) {
       setStatus("error");
+      setErrorMessage("Connection failed. Please check your internet.");
     }
   };
   // ----------------
@@ -90,7 +97,6 @@ export default function ContactPage() {
             <span className="text-xs font-bold text-primary tracking-widest uppercase">Accepting New Clients</span>
           </div>
 
-          {/* UPDATED HEADLINE COLORING */}
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-black tracking-tight mb-6 leading-[1.1]">
             Let’s Revolutionize <br />
             <span className="text-primary">Your Revenue.</span>
@@ -110,7 +116,6 @@ export default function ContactPage() {
           <div className="text-center mb-12">
              <h2 className="text-3xl md:text-4xl font-bold text-black mb-6">What happens on this call?</h2>
              
-             {/* Call Details Badges */}
              <div className="inline-flex flex-wrap justify-center gap-3 md:gap-6">
                 <span className="flex items-center gap-2 px-4 py-2 bg-white border border-grey-medium/10 rounded-full text-sm font-bold text-black shadow-sm">
                    <Video className="w-4 h-4 text-primary" /> Google Meet
@@ -126,7 +131,6 @@ export default function ContactPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
              
-             {/* Step 1 */}
              <div className="bg-white p-8 rounded-2xl border border-grey-medium/10 shadow-sm relative group hover:shadow-md transition-all">
                 <div className="text-5xl font-black text-grey-light/50 absolute top-4 right-4 group-hover:text-primary/10 transition-colors">01</div>
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-primary mb-6">
@@ -138,7 +142,6 @@ export default function ContactPage() {
                 </p>
              </div>
 
-             {/* Step 2 */}
              <div className="bg-white p-8 rounded-2xl border border-grey-medium/10 shadow-sm relative group hover:shadow-md transition-all">
                 <div className="text-5xl font-black text-grey-light/50 absolute top-4 right-4 group-hover:text-primary/10 transition-colors">02</div>
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-primary mb-6">
@@ -150,7 +153,6 @@ export default function ContactPage() {
                 </p>
              </div>
 
-             {/* Step 3 */}
              <div className="bg-white p-8 rounded-2xl border border-grey-medium/10 shadow-sm relative group hover:shadow-md transition-all">
                 <div className="text-5xl font-black text-grey-light/50 absolute top-4 right-4 group-hover:text-primary/10 transition-colors">03</div>
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-primary mb-6">
@@ -167,12 +169,11 @@ export default function ContactPage() {
       </section>
 
 
-      {/* 3. THE APPLICATION INTERFACE (Added ID="book") */}
+      {/* 3. THE APPLICATION INTERFACE */}
       <section id="book" className="py-24">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-0 bg-white border border-grey-medium/10 rounded-3xl shadow-2xl overflow-hidden">
             
-            {/* LEFT: The Application Form (The Filter) */}
             <div className="bg-[#050505] text-white p-8 md:p-12">
               <div className="mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2 tracking-tight text-white">Tell us about your project.</h2>
@@ -196,7 +197,6 @@ export default function ContactPage() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   
-                  {/* Name & Email */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-zinc-300">First Name</label>
@@ -222,7 +222,6 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  {/* Website */}
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-zinc-300">Website / Social URL</label>
                     <input 
@@ -234,7 +233,6 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  {/* Stage Selection */}
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-zinc-300">Which best describes you?</label>
                     <select 
@@ -248,7 +246,6 @@ export default function ContactPage() {
                     </select>
                   </div>
 
-                  {/* Tech Pain */}
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-zinc-300">What is your biggest "Tech Pain" right now?</label>
                     <textarea 
@@ -260,7 +257,6 @@ export default function ContactPage() {
                     ></textarea>
                   </div>
 
-                  {/* Budget */}
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-zinc-300">Budget Range</label>
                     <select 
@@ -277,7 +273,7 @@ export default function ContactPage() {
 
                   <div className="pt-4">
                     {status === "error" && (
-                        <p className="text-red-400 text-sm mb-3">Something went wrong. Please try again.</p>
+                        <p className="text-red-400 text-sm mb-3 font-bold">{errorMessage}</p>
                     )}
                     <button 
                       type="submit" 
@@ -299,7 +295,6 @@ export default function ContactPage() {
               )}
             </div>
 
-            {/* RIGHT: The Calendar Embed */}
             <div className="bg-white relative h-[800px] lg:h-auto border-l border-grey-medium/10">
               <iframe 
                 src="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3ukppRT0idn0XzAAN7H4ZOEB5A0CGdOk7j_nSNlhUDHMDW23xQ_sUmHbhURSDpE3B64xnZTLSY?gv=true" 
@@ -314,7 +309,7 @@ export default function ContactPage() {
       </section>
 
 
-      {/* 4. FAQ SECTION: Addressing Objections */}
+      {/* 4. FAQ SECTION */}
       <section className="py-24 bg-[#F9FAFB] border-t border-grey-medium/5">
         <div className="container mx-auto px-4 md:px-6 max-w-4xl">
           <div className="text-center mb-16">
@@ -323,24 +318,19 @@ export default function ContactPage() {
           </div>
 
           <div className="grid gap-6">
-            
-            {/* Map FAQs based on state */}
             {faqs.slice(0, isFaqExpanded ? faqs.length : 3).map((faq, index) => (
               <div key={index} className="bg-white p-8 rounded-2xl border border-grey-medium/10 shadow-sm hover:shadow-md transition-all">
                 <h3 className="font-bold text-lg text-black mb-3 flex items-start gap-3">
                   <HelpCircle className="w-5 h-5 text-primary shrink-0 mt-1" /> 
                   {faq.question}
                 </h3>
-                {/* Using font-bold for key phrases isn't possible dynamically without parsing, so we keep the text clean standard style requested */}
                 <p className="text-grey-medium font-medium leading-relaxed pl-8">
                   {faq.answer}
                 </p>
               </div>
             ))}
-
           </div>
 
-          {/* Load More Button */}
           <div className="mt-12 text-center">
             <button 
               onClick={() => setIsFaqExpanded(!isFaqExpanded)}

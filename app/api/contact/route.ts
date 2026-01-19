@@ -19,7 +19,6 @@ export async function POST(request: Request) {
       first_name: firstName,
       status: "subscribed",
       tags: TAG_ID ? [TAG_ID] : [], 
-      // CRITICAL FIX: Add these flags (copied from your working Audit route)
       resubscribe: true, 
       force: true,       
       custom_values: {
@@ -30,7 +29,6 @@ export async function POST(request: Request) {
       }
     };
 
-    // CRITICAL FIX: Changed URL from ".../subscribers/subscribe" to ".../subscribers"
     const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {
@@ -42,24 +40,41 @@ export async function POST(request: Request) {
 
     const result = await response.json();
 
+    // If the request failed...
     if (!response.ok) {
-        // Handle "Already assigned" explicitly just in case, similar to your audit route
-        if (result.message && result.message.includes("already assigned")) {
-             return NextResponse.json({ 
-              success: true, 
-              message: "Welcome back! Your details have been updated." 
-            });
-        }
+      console.error("FluentCRM Error Response:", result); // Helpful for Vercel logs
+
+      // Convert the entire result object to a string to check for keywords
+      const errorString = JSON.stringify(result).toLowerCase();
+      
+      // Check if it's an "existing user" error
+      // 422 is the standard code for "Unprocessable Entity" (duplicate email)
+      const isExistingUser = 
+        errorString.includes("already") || 
+        errorString.includes("exists") || 
+        errorString.includes("duplicate") ||
+        response.status === 422; 
+
+      if (isExistingUser) {
+         return NextResponse.json({ 
+          success: true, 
+          message: "Welcome back! We've updated your details." 
+        });
+      }
+
+      // If it's some other real error, show it
       return NextResponse.json({ error: result.message || "WordPress sync failed." }, { status: 400 });
     }
 
-    const message = result.message?.includes("updated") 
+    // Success Case
+    const message = result.message?.toLowerCase().includes("updated") 
       ? "Welcome back! Your details have been updated." 
       : "Application Received!";
 
     return NextResponse.json({ success: true, message });
 
   } catch (error: any) {
+    console.error("Server Error:", error);
     return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }

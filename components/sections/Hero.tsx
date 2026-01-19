@@ -100,10 +100,12 @@ export function Hero() {
              </svg>
 
              {/* CENTRAL NODE */}
-             <div className="mr-15 mt-4 relative z-20 animate-float-slow flex items-center justify-center w-[500px] h-[500px]"> 
+             {/* FIX 1: Removed 'mr-15' to fix off-center alignment on different screens */}
+             <div className="mt-4 relative z-20 animate-float-slow flex items-center justify-center w-[500px] h-[500px]"> 
                 <div className="w-28 h-28 glass-card rounded-full flex flex-col items-center justify-center shadow-[0_0_50px_rgba(48,24,205,0.15)] border border-white/60 z-30">
                    <div className="w-14 h-14 bg-gradient-to-tr from-primary to-indigo-600 rounded-full flex items-center justify-center text-white mb-1 shadow-inner">
-                     <span className="text-4xl leading-none pt-1" style={{ fontFamily: 'var(--font-allerta), sans-serif', fontWeight: '400' }}>
+                     {/* FIX 2: Added 'pr-1' to optically center the letter N */}
+                     <span className="text-4xl leading-none pt-1 pr-1" style={{ fontFamily: 'var(--font-allerta), sans-serif', fontWeight: '400' }}>
                        N
                      </span>
                    </div>

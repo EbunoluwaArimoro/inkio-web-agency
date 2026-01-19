@@ -1,15 +1,15 @@
-"use client"; // 1. Made Client Component
+"use client";
 
 import { useState } from "react";
 import { ArrowRight, CreditCard, Users, Lock } from "lucide-react";
 import Link from "next/link";
-import { AuditModal } from "@/components/ui/AuditModal"; // 2. Import the modal
+import { AuditModal } from "@/components/ui/AuditModal";
 
 export function Hero() {
-  const [isModalOpen, setIsModalOpen] = useState(false); // 3. Add State
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    // UPDATED PADDING: pt-32 pulls it up nicely under the fixed header without overlapping
+    // UPDATED PADDING: pt-32 pulls it up nicely under the fixed header
     <section className="relative pt-32 pb-16 lg:pt-30 lg:pb-24 bg-white overflow-hidden selection:bg-primary/20">
       
       {/* 0. THE NET/GRID BACKGROUND */}
@@ -72,39 +72,43 @@ export function Hero() {
           </div>
 
           {/* RIGHT COLUMN: The "Nexus" System */}
-          <div className="relative h-[500px] w-full hidden lg:flex items-center justify-center perspective-[1000px] lg:-mt-35">
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
-                <defs>
-                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#3018CD" stopOpacity="0" />
-                    <stop offset="50%" stopColor="#3018CD" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#3018CD" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M250 250 L400 100" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
-                <circle r="3" fill="#3018CD">
-                   <animateMotion dur="3s" repeatCount="indefinite" path="M250 250 L400 100" keyPoints="0;1" keyTimes="0;1" />
-                </circle>
-                <path d="M250 250 L100 400" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
-                <circle r="3" fill="#3018CD">
-                   <animateMotion dur="4s" repeatCount="indefinite" path="M250 250 L100 400" keyPoints="0;1" keyTimes="0;1" />
-                </circle>
-                <path d="M250 250 L120 120" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
-                <circle r="3" fill="#3018CD">
-                   <animateMotion dur="5s" repeatCount="indefinite" path="M250 250 L120 120" keyPoints="0;1" keyTimes="0;1" />
-                </circle>
-                <path d="M250 250 L380 380" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
-                <circle r="3" fill="#3018CD">
-                   <animateMotion dur="6s" repeatCount="indefinite" path="M250 250 L380 380" keyPoints="0;1" keyTimes="0;1" />
-                </circle>
-             </svg>
+          {/* FIX: Changed justify-center to justify-start and added pl-12. This locks the graphic to the left (near text) so it doesn't "float" around or look skewed on wide screens. */}
+          <div className="relative h-[500px] w-full hidden lg:flex items-center lg:justify-start lg:pl-12 perspective-[1000px] lg:-mt-35">
+             
+             {/* CENTRAL NODE CONTAINER */}
+             {/* FIX: Moved SVG INSIDE this container. Now the lines (SVG) and Cards (HTML) share the exact same 500x500 coordinate space. They will never detach or skew again. */}
+             <div className="relative z-20 animate-float-slow flex items-center justify-center w-[500px] h-[500px]"> 
+                
+                {/* SVG Lines - Locked inside the 500px box */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#3018CD" stopOpacity="0" />
+                      <stop offset="50%" stopColor="#3018CD" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#3018CD" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M250 250 L400 100" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
+                  <circle r="3" fill="#3018CD">
+                     <animateMotion dur="3s" repeatCount="indefinite" path="M250 250 L400 100" keyPoints="0;1" keyTimes="0;1" />
+                  </circle>
+                  <path d="M250 250 L100 400" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
+                  <circle r="3" fill="#3018CD">
+                     <animateMotion dur="4s" repeatCount="indefinite" path="M250 250 L100 400" keyPoints="0;1" keyTimes="0;1" />
+                  </circle>
+                  <path d="M250 250 L120 120" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
+                  <circle r="3" fill="#3018CD">
+                     <animateMotion dur="5s" repeatCount="indefinite" path="M250 250 L120 120" keyPoints="0;1" keyTimes="0;1" />
+                  </circle>
+                  <path d="M250 250 L380 380" stroke="url(#lineGradient)" strokeWidth="1" fill="none" />
+                  <circle r="3" fill="#3018CD">
+                     <animateMotion dur="6s" repeatCount="indefinite" path="M250 250 L380 380" keyPoints="0;1" keyTimes="0;1" />
+                  </circle>
+               </svg>
 
-             {/* CENTRAL NODE */}
-             {/* FIX 1: Removed 'mr-15' to fix off-center alignment on different screens */}
-             <div className="mt-4 relative z-20 animate-float-slow flex items-center justify-center w-[500px] h-[500px]"> 
+                {/* Main Center Card */}
                 <div className="w-28 h-28 glass-card rounded-full flex flex-col items-center justify-center shadow-[0_0_50px_rgba(48,24,205,0.15)] border border-white/60 z-30">
                    <div className="w-14 h-14 bg-gradient-to-tr from-primary to-indigo-600 rounded-full flex items-center justify-center text-white mb-1 shadow-inner">
-                     {/* FIX 2: Added 'pr-1' to optically center the letter N */}
                      <span className="text-4xl leading-none pt-1 pr-1" style={{ fontFamily: 'var(--font-allerta), sans-serif', fontWeight: '400' }}>
                        N
                      </span>

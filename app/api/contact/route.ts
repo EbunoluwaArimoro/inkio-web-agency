@@ -19,6 +19,9 @@ export async function POST(request: Request) {
       first_name: firstName,
       status: "subscribed",
       tags: TAG_ID ? [TAG_ID] : [], 
+      // ADD THESE TWO LINES (Copied from your working Audit route)
+      resubscribe: true, 
+      force: true,       
       custom_values: {
         company_website: website,   
         business_stage: stage,      
@@ -27,8 +30,10 @@ export async function POST(request: Request) {
       }
     };
 
-    // We use the /subscribe endpoint because it handles "Create OR Update" automatically
-    const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers/subscribe`, {
+    // CHANGE THIS URL
+    // Old: .../subscribers/subscribe
+    // New: .../subscribers (This is the standard endpoint that we know works)
+    const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -40,10 +45,16 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
+        // Handle "Already assigned" explicitly just in case, similar to your audit route
+        if (result.message && result.message.includes("already assigned")) {
+             return NextResponse.json({ 
+              success: true, 
+              message: "Welcome back! Your details have been updated." 
+            });
+        }
       return NextResponse.json({ error: result.message || "WordPress sync failed." }, { status: 400 });
     }
 
-    // Check if the user was already there or new
     const message = result.message?.includes("updated") 
       ? "Welcome back! Your details have been updated." 
       : "Application Received!";

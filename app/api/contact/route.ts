@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       first_name: firstName,
       status: "subscribed",
       tags: TAG_ID ? [TAG_ID] : [], 
-      // ADD THESE TWO LINES (Copied from your working Audit route)
+      // CRITICAL FIX: Add these flags (copied from your working Audit route)
       resubscribe: true, 
       force: true,       
       custom_values: {
@@ -30,9 +30,7 @@ export async function POST(request: Request) {
       }
     };
 
-    // CHANGE THIS URL
-    // Old: .../subscribers/subscribe
-    // New: .../subscribers (This is the standard endpoint that we know works)
+    // CRITICAL FIX: Changed URL from ".../subscribers/subscribe" to ".../subscribers"
     const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {

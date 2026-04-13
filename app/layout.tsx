@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, Allerta_Stencil } from "next/font/google"; // 1. Added Allerta_Stencil here
+import { Inter, Space_Grotesk, Allerta_Stencil } from "next/font/google";
 import "./globals.css";
 // IMPORT THE COMPONENTS
 import { Header } from "@/components/layout/Header";
@@ -17,7 +17,7 @@ const telegraf = Space_Grotesk({
   display: "swap",
 });
 
-// 2. Configure the Stencil font (Added this block)
+// Configure the Stencil font
 const allertaStencil = Allerta_Stencil({ 
   weight: "400", 
   subsets: ["latin"],
@@ -37,7 +37,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      {/* 3. Added ${allertaStencil.variable} to the class list below */}
+      <head>
+        {/* Preconnect to Google Calendar to speed up the booking widget connection */}
+        <link rel="preconnect" href="https://calendar.google.com" />
+        <link rel="preconnect" href="https://www.google.com" />
+      </head>
       <body className={`${inter.variable} ${telegraf.variable} ${allertaStencil.variable} antialiased font-sans bg-white text-black`}>
         
         {/* HEADER */}

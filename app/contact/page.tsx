@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Check, Calendar, Clock, Video, HelpCircle, ArrowRight, ChevronDown, ChevronUp, Search, Map, CheckCircle, Loader2 } from "lucide-react";
+import { Turnstile } from '@marsidev/react-turnstile'; // Ensure you've run: npm install @marsidev/react-turnstile
 
 export default function ContactPage() {
   const [isFaqExpanded, setIsFaqExpanded] = useState(false);
@@ -16,9 +17,10 @@ export default function ContactPage() {
     pain: "",
     budget: ""
   });
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null); // Added for Turnstile
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("Application Received"); // Added this line
+  const [successMessage, setSuccessMessage] = useState("Application Received");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,6 +28,14 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Verification check
+    if (!turnstileToken) {
+      setErrorMessage("Please complete the security check.");
+      setStatus("error");
+      return;
+    }
+
     setStatus("loading");
     setErrorMessage("");
 
@@ -33,18 +43,17 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // Included turnstileToken in the payload
+        body: JSON.stringify({ ...formData, turnstileToken }),
       });
 
       const result = await res.json();
 
       if (res.ok) {
-        // Set the dynamic message from the API (e.g., "Welcome back!" or "Application Received")
         setSuccessMessage(result.message || "Application Received");
         setStatus("success");
       } else {
         setStatus("error");
-        // Capture the specific error from the API
         setErrorMessage(result.error || "Something went wrong. Please try again.");
       }
     } catch (error) {
@@ -190,7 +199,6 @@ export default function ContactPage() {
                     <Check className="w-10 h-10 text-green-500" />
                   </div>
                   <div>
-                    {/* UPDATED MESSAGE HERE */}
                     <h3 className="text-2xl font-bold text-white">{successMessage}</h3>
                     <p className="text-zinc-400 mt-2 text-sm leading-relaxed">
                       Thank you, {formData.firstName}. <br/>
@@ -273,6 +281,14 @@ export default function ContactPage() {
                       <option className="text-black" value="4.5-7k">$4.5k - $7k (Launchpad System)</option>
                       <option className="text-black" value="7-10k+">$7k - $10k+ (Growth Engine / Custom)</option>
                     </select>
+                  </div>
+
+                  {/* Added Turnstile Widget */}
+                  <div className="py-2">
+                    <Turnstile 
+                      siteKey={process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY!} 
+                      onSuccess={(token) => setTurnstileToken(token)} 
+                    />
                   </div>
 
                   <div className="pt-4">

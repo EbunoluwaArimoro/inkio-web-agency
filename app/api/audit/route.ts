@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email, turnstileToken } = await request.json();
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+
+    // Verify Cloudflare Turnstile Token
+    if (!turnstileToken) {
+      return NextResponse.json({ error: "Security check required" }, { status: 400 });
+    }
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      return NextResponse.json({ error: "Security check failed" }, { status: 403 });
+    }
 
     const WP_URL = process.env.WP_URL;
     const WP_USER = process.env.WP_USER;
@@ -16,12 +26,10 @@ export async function POST(request: Request) {
       email: email, 
       status: "subscribed", 
       tags: TAG_ID ? [TAG_ID] : [],
-      // These two lines allow re-subscribing without the "No Route" or "Duplicate" error
       resubscribe: true,
       force: true 
     };
 
-    // We go back to the base /subscribers endpoint because it's the most compatible
     const response = await fetch(`${WP_URL}/wp-json/fluent-crm/v2/subscribers`, {
       method: "POST",
       headers: {
@@ -34,7 +42,6 @@ export async function POST(request: Request) {
     const result = await response.json();
 
     if (!response.ok) {
-      // If it's a duplicate, WordPress might still return a 400 but with a success message inside
       if (result.message && result.message.includes("already assigned")) {
          return NextResponse.json({ 
           success: true, 

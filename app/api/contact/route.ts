@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { firstName, email, website, stage, pain, budget } = body;
+    const { firstName, email, website, stage, pain, budget, turnstileToken } = body;
+
+    // Verify Cloudflare Turnstile Token
+    if (!turnstileToken) {
+      return NextResponse.json({ error: "Security check required" }, { status: 400 });
+    }
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      return NextResponse.json({ error: "Security check failed. Please try again." }, { status: 403 });
+    }
 
     const WP_URL = process.env.WP_URL;
     const WP_USER = process.env.WP_USER;
@@ -40,15 +50,9 @@ export async function POST(request: Request) {
 
     const result = await response.json();
 
-    // If the request failed...
     if (!response.ok) {
-      console.error("FluentCRM Error Response:", result); // Helpful for Vercel logs
-
-      // Convert the entire result object to a string to check for keywords
+      console.error("FluentCRM Error Response:", result);
       const errorString = JSON.stringify(result).toLowerCase();
-      
-      // Check if it's an "existing user" error
-      // 422 is the standard code for "Unprocessable Entity" (duplicate email)
       const isExistingUser = 
         errorString.includes("already") || 
         errorString.includes("exists") || 
@@ -61,12 +65,9 @@ export async function POST(request: Request) {
           message: "Welcome back! We've updated your details." 
         });
       }
-
-      // If it's some other real error, show it
       return NextResponse.json({ error: result.message || "WordPress sync failed." }, { status: 400 });
     }
 
-    // Success Case
     const message = result.message?.toLowerCase().includes("updated") 
       ? "Welcome back! Your details have been updated." 
       : "Application Received!";

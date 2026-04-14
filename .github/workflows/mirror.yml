@@ -1,0 +1,19 @@
+name: Mirror to inkioweb
+
+on:
+  push:
+    branches:
+      - main # or 'master' depending on your default branch name
+
+jobs:
+  git-mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: yesolutions/mirror-action@master
+        with:
+          REMOTE: "https://github.com/inkioweb/inkio-web-agency.git"
+          GIT_USERNAME: inkioweb
+          GIT_PASSWORD: ${{ secrets.SYNC_TOKEN }}

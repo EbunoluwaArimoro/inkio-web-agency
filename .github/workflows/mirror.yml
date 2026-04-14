@@ -15,5 +15,5 @@ jobs:
       - uses: yesolutions/mirror-action@master
         with:
           REMOTE: "https://github.com/inkioweb/inkio-web-agency.git"
-          GIT_USERNAME: EbunoluwaArimoro
+          GIT_USERNAME: inkioweb
           GIT_PASSWORD: ${{ secrets.SYNC_TOKEN }}
